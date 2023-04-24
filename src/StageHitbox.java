@@ -10,11 +10,13 @@ public class StageHitbox
 {
 	private ImageIcon sprite;
 	private Rectangle Hitbox;
+	private boolean isBreakable;
 	
-	public StageHitbox(int x, int y, int width, int height, ImageIcon sprite)
+	public StageHitbox(int x, int y, int width, int height, ImageIcon sprite, boolean isBreakable)
 	{
 		this.sprite = sprite;
 		Hitbox = new Rectangle(x, y, width, height);
+		this.isBreakable = isBreakable;
 	}
 	
 	public void loadSprite(Graphics2D g, JPanel panel)
@@ -31,6 +33,18 @@ public class StageHitbox
 	{
 		Hitbox = hitbox;
 	}
+
+	public boolean isBreakable()
+	{
+		return isBreakable;
+	}
+
+	public void setBreakable(boolean isBreakable)
+	{
+		this.isBreakable = isBreakable;
+	}
+	
+	
 	
 	
 }

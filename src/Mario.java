@@ -16,7 +16,7 @@ public class Mario
 	public Mario()
 	{
 		x = 1920/2;
-		y = 0;
+		y = 980;
 		jumping = false;
 		touchingStage = false;
 		sprite = new ImageIcon("assets/MarioIdleRight.png");
@@ -100,26 +100,26 @@ public class Mario
 	{
 		touchingStage = false;
 		
-		for(StageHitbox t : h)
+		for(int i = 0; i < h.size(); i++)
 		{
+			StageHitbox t = h.get(i);
+			
 			if(t.getHitbox().intersects(Hitbox))
 			{
-				//System.out.println("ttttttttt\t" + falling);
-				//System.out.println(movingRight);
-				//System.out.println(goingUp);
 				
 				System.out.println(Hitbox.y);
 				
 				if(falling && Hitbox.y < t.getHitbox().y)
-				{
-					//System.out.println("yyyyyyyyyy\t" + y);
 					y = t.getHitbox().y - Hitbox.height;
-				}
 				
 				else if(goingUp && Hitbox.x > t.getHitbox().x && Hitbox.x < t.getHitbox().x + t.getHitbox().width)
 				{
 					y = t.getHitbox().y + t.getHitbox().height;
-					System.out.println(y);
+					goingUp = false;
+					falling = true;
+					yVel = 2;
+					if(t.isBreakable())
+						h.remove(i);
 				}
 				
 				
