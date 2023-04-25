@@ -14,9 +14,11 @@ import javax.swing.*;
 public class MarioPanel extends JPanel
 {
 	//variables for the overall width and height
-	private int w, h, leftMost, rightMost;
+	private int w, h, leftMost, rightMost, last;
 	private Timer ticker, faller, jumper;
 	private Mario mario;
+	private Graphics2D g;
+	private JPanel panel;
 	private ArrayList<StageHitbox> stageHitboxes;
 	
 	//sets up the initial panel for drawing with proper size
@@ -32,6 +34,9 @@ public class MarioPanel extends JPanel
 		
 		this.addKeyListener(new KeyListen());
 		this.setFocusable(true);
+		
+		panel = new JPanel();
+		this.add(panel);
 		
 		leftMost = 0;
 		rightMost = 1920;
@@ -51,7 +56,7 @@ public class MarioPanel extends JPanel
 		//this line sets up the graphics - always needed
 		super.paintComponent(tg);
 		
-		Graphics2D g = (Graphics2D)tg;
+		g = (Graphics2D)tg;
 		
 		//all drawings below here:
 		
@@ -61,9 +66,9 @@ public class MarioPanel extends JPanel
 		}
 		
 		for(StageHitbox h : stageHitboxes)
-			h.loadSprite(g, this);
+			h.loadSprite(g, panel);
 		
-		mario.loadSprite(g, this);
+		mario.loadSprite(g, panel);
 		
 		
 		
@@ -85,7 +90,7 @@ public class MarioPanel extends JPanel
 			{
 				mario.setFalling(true);
 				
-				if(mario.isTouchingStage(stageHitboxes))
+				if(mario.isTouchingStage(stageHitboxes, g, panel))
 				{
 					mario.setJumping(false);
 					mario.setyVel(2);
@@ -137,6 +142,7 @@ public class MarioPanel extends JPanel
 				mario.setMovingRight(true);
 				break;
 			case KeyEvent.VK_A:
+				if(!(stageHitboxes.get(0).getHitbox().x >= 0))
 				mario.setMovingLeft(true);
 				break;
 			case KeyEvent.VK_W:
@@ -181,8 +187,14 @@ public class MarioPanel extends JPanel
 	
 	public void updateMario()
 	{	
+		if(stageHitboxes.size() > 0 && (stageHitboxes.get(0).getHitbox().x >= 0))
+			mario.setMovingLeft(false);
+		
 		mario.updateHitbox();
 		mario.updateSprite();
+		
+		if(mario.isDead())
+			System.out.println("t");
 		
 		if(mario.isMovingRight())
 		{
@@ -197,7 +209,7 @@ public class MarioPanel extends JPanel
 		}
 			
 		
-		if(!mario.isTouchingStage(stageHitboxes) && !mario.isGoingUp())
+		if(!mario.isTouchingStage(stageHitboxes, g, panel) && !mario.isGoingUp())
 			faller.start();
 	}
 	
@@ -206,54 +218,105 @@ public class MarioPanel extends JPanel
 		int constx = 0;
 		for(int x = 0; x < 10; x++)
 		{
-			int rand = (int)(Math.random()*10);
-			rand = 2;
+			int rand = -1;
+			
+			do 
+			{
+				rand = (int)(Math.random()*3);
+			}while(rand != last);
+			
+			last = rand;
+			
+			rand = 4;
 			
 			switch(rand)
 			{
 			case 0:
 				for(int a = constx; a < constx+1920; a += 50)
-					stageHitboxes.add(new StageHitbox(a, 1030, 50, 50, new ImageIcon("assets/floor.png"), false));
+					stageHitboxes.add(new StageHitbox(a, 1030, 50, 50, new ImageIcon("assets/floor.png"), false, false));
 				
 				constx += 1920;
 				break;
 			case 1:
 				for(int a = constx; a < constx+1920; a += 50)
-					stageHitboxes.add(new StageHitbox(a, 1030, 50, 50, new ImageIcon("assets/floor.png"), false));
+					stageHitboxes.add(new StageHitbox(a, 1030, 50, 50, new ImageIcon("assets/floor.png"), false, false));
 				
 				for(int a = constx + 1920/2+25; a < constx + 1920/2+525; a += 50)
-					stageHitboxes.add(new StageHitbox(a, 900, 50, 50, new ImageIcon("assets/brick.png"), true));
+					stageHitboxes.add(new StageHitbox(a, 900, 50, 50, new ImageIcon("assets/brick.png"), true, false));
 				
 				for(int a = constx + 1920/2+125; a < constx + 1920/2+575; a += 50)
-					stageHitboxes.add(new StageHitbox(a, 775, 50, 50, new ImageIcon("assets/brick.png"), true));
+					stageHitboxes.add(new StageHitbox(a, 775, 50, 50, new ImageIcon("assets/brick.png"), true, false));
 				
 				for(int a = constx + 1920/2+225; a < constx + 1920/2+625; a += 50)
-					stageHitboxes.add(new StageHitbox(a, 650, 50, 50, new ImageIcon("assets/brick.png"), true));
+					stageHitboxes.add(new StageHitbox(a, 650, 50, 50, new ImageIcon("assets/brick.png"), true, false));
 				
 				constx += 1920;
 				break;
 				
 			case 2: 
 				for(int a = constx; a < constx+1200; a += 50)
-					stageHitboxes.add(new StageHitbox(a, 1030, 50, 50, new ImageIcon("assets/floor.png"), false));
+					stageHitboxes.add(new StageHitbox(a, 1030, 50, 50, new ImageIcon("assets/floor.png"), false, false));
 				
 				for(int a = constx+1400; a < constx+1920; a += 50)
-					stageHitboxes.add(new StageHitbox(a, 1030, 50, 50, new ImageIcon("assets/floor.png"), false));
+					stageHitboxes.add(new StageHitbox(a, 1030, 50, 50, new ImageIcon("assets/floor.png"), false, false));
 				
 				for(int a = constx+1050; a < constx+1200; a += 50)
-					stageHitboxes.add(new StageHitbox(a, 980, 50, 50, new ImageIcon("assets/floor.png"), false));
+					stageHitboxes.add(new StageHitbox(a, 980, 50, 50, new ImageIcon("assets/floor.png"), false, false));
 				for(int a = constx+1100; a < constx+1200; a += 50)
-					stageHitboxes.add(new StageHitbox(a, 930, 50, 50, new ImageIcon("assets/floor.png"), false));
+					stageHitboxes.add(new StageHitbox(a, 930, 50, 50, new ImageIcon("assets/floor.png"), false, false));
 				for(int a = constx+1150; a < constx+1200; a += 50)
-					stageHitboxes.add(new StageHitbox(a, 880, 50, 50, new ImageIcon("assets/floor.png"), false));
+					stageHitboxes.add(new StageHitbox(a, 880, 50, 50, new ImageIcon("assets/floor.png"), false, false));
 				
 				for(int a = constx+1400; a < constx+1550; a += 50)
-					stageHitboxes.add(new StageHitbox(a, 980, 50, 50, new ImageIcon("assets/floor.png"), false));
+					stageHitboxes.add(new StageHitbox(a, 980, 50, 50, new ImageIcon("assets/floor.png"), false, false));
 				for(int a = constx+1400; a < constx+1500; a += 50)
-					stageHitboxes.add(new StageHitbox(a, 930, 50, 50, new ImageIcon("assets/floor.png"), false));
+					stageHitboxes.add(new StageHitbox(a, 930, 50, 50, new ImageIcon("assets/floor.png"), false, false));
 				for(int a = constx+1400; a < constx+1450; a += 50)
-					stageHitboxes.add(new StageHitbox(a, 880, 50, 50, new ImageIcon("assets/floor.png"), false));
+					stageHitboxes.add(new StageHitbox(a, 880, 50, 50, new ImageIcon("assets/floor.png"), false, false));
 				
+				constx += 1920;
+				break;
+				
+			case 3:
+				
+				for(int a = constx; a < constx+1200; a += 50)
+					stageHitboxes.add(new StageHitbox(a, 1030, 50, 50, new ImageIcon("assets/floor.png"), false, false));
+				
+				for(int a = constx+1350; a < constx+1920; a += 50)
+					stageHitboxes.add(new StageHitbox(a, 1030, 50, 50, new ImageIcon("assets/floor.png"), false, false));
+				
+				for(int a = constx + 300; a < constx + 450; a += 50)
+					stageHitboxes.add(new StageHitbox(a, 900, 50, 50, new ImageIcon("assets/brick.png"), true, false));
+				
+				for(int a = constx + 450; a < constx + 700; a += 50)
+					stageHitboxes.add(new StageHitbox(a, 775, 50, 50, new ImageIcon("assets/brick.png"), true, false));
+				
+				for(int a = constx + 850; a < constx + 1050; a += 50)
+					stageHitboxes.add(new StageHitbox(a, 775, 50, 50, new ImageIcon("assets/brick.png"), true, false));
+				
+				constx += 1920;
+				break;
+				
+			case 4:
+				
+				for(int a = constx; a < constx+1920; a += 50)
+					stageHitboxes.add(new StageHitbox(a, 1030, 50, 50, new ImageIcon("assets/floor.png"), false, false));
+				
+				stageHitboxes.add(new StageHitbox(constx+1200, 900, 50, 50, new ImageIcon("assets/qMark.png"), true, true));
+				stageHitboxes.add(new StageHitbox(constx+1450, 900, 50, 50, new ImageIcon("assets/brick.png"), true, false));
+				stageHitboxes.add(new StageHitbox(constx+1550, 900, 50, 50, new ImageIcon("assets/qMark.png"), true, true));
+				stageHitboxes.add(new StageHitbox(constx+1600, 900, 50, 50, new ImageIcon("assets/brick.png"), true, false));
+				stageHitboxes.add(new StageHitbox(constx+1650, 900, 50, 50, new ImageIcon("assets/brick.png"), true, false));
+				stageHitboxes.add(new StageHitbox(constx+1700, 900, 50, 50, new ImageIcon("assets/qMark.png"), true, true));
+				
+				for(int a = constx + 450; a < constx + 700; a += 50)
+					stageHitboxes.add(new StageHitbox(a, 775, 50, 50, new ImageIcon("assets/brick.png"), true, false));
+				
+				for(int a = constx + 850; a < constx + 1050; a += 50)
+					stageHitboxes.add(new StageHitbox(a, 775, 50, 50, new ImageIcon("assets/brick.png"), true, false));
+				
+				constx += 1920;
+				break;
 			}
 		}
 	}

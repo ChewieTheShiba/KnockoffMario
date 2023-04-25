@@ -11,15 +11,18 @@ public class Mario
 	private int x, y, yVel;
 	private boolean jumping, faceRight, movingRight, movingLeft, touchingStage, goingUp, falling;
 	private ImageIcon sprite;
+	private String marioType;
 	private final int JUMPHEIGHT;
-	private Rectangle Hitbox;	
+	private Rectangle Hitbox;
+	
 	public Mario()
 	{
 		x = 1920/2;
 		y = 980;
 		jumping = false;
 		touchingStage = false;
-		sprite = new ImageIcon("assets/MarioIdleRight.png");
+		marioType = "";
+		sprite = new ImageIcon("assets/" + marioType + "MarioIdleRight.png");
 		goingUp = false;
 		faceRight = true;
 		yVel = 2;
@@ -96,7 +99,7 @@ public class Mario
 			faceRight = false;
 	}
 
-	public boolean isTouchingStage(ArrayList<StageHitbox> h)
+	public boolean isTouchingStage(ArrayList<StageHitbox> h, Graphics2D g, JPanel panel)
 	{
 		touchingStage = false;
 		
@@ -106,24 +109,51 @@ public class Mario
 			
 			if(t.getHitbox().intersects(Hitbox))
 			{
+				boolean checker = false;
 				
-				System.out.println(Hitbox.y);
+				if(movingLeft)
+				checker = x >= t.getHitbox().x && x <= t.getHitbox().x + t.getHitbox().width && y + Hitbox.height > t.getHitbox().y && y+Hitbox.height <= t.getHitbox().y + t.getHitbox().height;
+				else
+				checker = x+20 >= t.getHitbox().x && x+20 <= t.getHitbox().x + t.getHitbox().width && y +Hitbox.height > t.getHitbox().y && y+Hitbox.height <= t.getHitbox().y + t.getHitbox().height;	
 				
 				if(falling && Hitbox.y < t.getHitbox().y)
 					y = t.getHitbox().y - Hitbox.height;
 				
-				else if(goingUp && Hitbox.x > t.getHitbox().x && Hitbox.x < t.getHitbox().x + t.getHitbox().width)
+				if(falling && Hitbox.y > t.getHitbox().y)
+				{
+					if(movingRight)
+						for(StageHitbox b : h)
+							b.setHitbox(new Rectangle(b.getHitbox().x+10, b.getHitbox().y, b.getHitbox().width, b.getHitbox().height));
+					else
+						for(StageHitbox b : h)
+							b.setHitbox(new Rectangle(b.getHitbox().x-10, b.getHitbox().y, b.getHitbox().width, b.getHitbox().height));
+				}
+				
+				else if(goingUp)
 				{
 					y = t.getHitbox().y + t.getHitbox().height;
 					goingUp = false;
 					falling = true;
 					yVel = 2;
-					if(t.isBreakable())
+					if(t.isBreakable() && !t.isQMark())
 						h.remove(i);
+					if(t.isQMark())
+					{
+						t.setBreakable(false); 
+						
+						int j = (int)(Math.random()*1);
+						
+						t.setQMark(false);
+						
+						t.setSprite(new ImageIcon("assets/usedQuestion.jpg"));
+						
+						if(j == 0)
+							new Mushroom(Hitbox.x, t.getHitbox().y, new ImageIcon("assets/Mushroom.png"), !faceRight).powerMarioUp(this);
+					}
 				}
 				
 				
-				else if(movingRight && (falling || goingUp))
+				else if(movingRight && checker)
 				{
 					movingRight = false;
 					falling = true;
@@ -132,7 +162,7 @@ public class Mario
 				}
 					
 				
-				else if(movingLeft && (falling || goingUp))
+				else if(movingLeft && checker)
 				{
 					movingLeft = false;
 					falling = true;
@@ -168,20 +198,25 @@ public class Mario
 	
 	public void updateHitbox()
 	{
-		Hitbox = new Rectangle(x+10, y+3, 18, 50);
+		Hitbox = new Rectangle(x+10, y+3, Hitbox.width, Hitbox.height);
+	}
+	
+	public void setHitbox(Rectangle hitbox)
+	{
+		Hitbox = hitbox;
 	}
 	
 	public void updateSprite()
 	{
 		if(movingRight)
-			sprite = new ImageIcon("assets/MarioWalkRight.gif");
+			sprite = new ImageIcon("assets/" + marioType + "MarioWalkRight.gif");
 		else if(movingLeft)
-			sprite = new ImageIcon("assets/MarioWalkLeft.gif");
+			sprite = new ImageIcon("assets/" + marioType + "MarioWalkLeft.gif");
 		//leave the faceRights at the bottom to not mess up code
 		else if(faceRight)
-			sprite = new ImageIcon("assets/MarioIdleRight.png");
+			sprite = new ImageIcon("assets/" + marioType + "MarioIdleRight.png");
 		else if(!faceRight)
-			sprite = new ImageIcon("assets/MarioIdleLeft.png");
+			sprite = new ImageIcon("assets/" + marioType + "MarioIdleLeft.png");
 			
 	}
 
@@ -204,6 +239,27 @@ public class Mario
 	{
 		this.falling = falling;
 	}
+
+	public boolean isDead()
+	{
+		if(y > 1080)
+			return true;
+		return false;
+	}
+
+	public String getMarioType()
+	{
+		return marioType;
+	}
+
+	public void setMarioType(String marioType)
+	{
+		this.marioType = marioType;
+	}
+
+	
+	
+	
 	
 	
 }
