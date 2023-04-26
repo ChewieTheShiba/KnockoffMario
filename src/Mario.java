@@ -8,12 +8,13 @@ import javax.swing.Timer;
 
 public class Mario
 {
-	private int x, y, yVel;
-	private boolean jumping, faceRight, movingRight, movingLeft, touchingStage, goingUp, falling;
+	private int x, y, yVel, coinCount;
+	private boolean jumping, faceRight, movingRight, movingLeft, touchingStage, goingUp, falling, dead;
 	private ImageIcon sprite;
 	private String marioType;
 	private final int JUMPHEIGHT;
 	private Rectangle Hitbox;
+	private ArrayList<Coin> coins;
 	
 	public Mario()
 	{
@@ -27,12 +28,31 @@ public class Mario
 		faceRight = true;
 		yVel = 2;
 		JUMPHEIGHT = 35;
+		coinCount = 0;
+		dead = false;
+		coins = new ArrayList<Coin>();
 		Hitbox = new Rectangle(x+10, y+3, 18, 50);
 	}
 	
 	public void loadSprite(Graphics2D g, JPanel panel)
 	{ 
 		sprite.paintIcon(panel, g, x, y); 
+	}
+	
+	public void loadCoins(Graphics2D g, JPanel panel)
+	{
+		for(int i = 0; i < coins.size(); i++)
+		{
+			if(coins.get(i).isTiming())
+				coins.get(i).getSprite().paintIcon(panel, g, coins.get(i).getX(), coins.get(i).getY());
+			else
+				coins.remove(i);
+		}
+	}
+	
+	public ArrayList<Coin> getCoins()
+	{
+		return coins;
 	}
 
 	public int getX()
@@ -53,6 +73,17 @@ public class Mario
 	public void setY(int y)
 	{
 		this.y = y;
+	}
+	
+
+	public int getCoinCount()
+	{
+		return coinCount;
+	}
+
+	public void setCoinCount(int coinCount)
+	{
+		this.coinCount = coinCount;
 	}
 
 	public boolean isJumping()
@@ -141,14 +172,19 @@ public class Mario
 					{
 						t.setBreakable(false); 
 						
-						int j = (int)(Math.random()*1);
+						int j = (int)(Math.random()*4);
 						
 						t.setQMark(false);
 						
 						t.setSprite(new ImageIcon("assets/usedQuestion.jpg"));
 						
-						if(j == 0)
-							new Mushroom(Hitbox.x, t.getHitbox().y, new ImageIcon("assets/Mushroom.png"), !faceRight).powerMarioUp(this);
+						if(j == 3)
+							new Mushroom(Hitbox.x, t.getHitbox().y, new ImageIcon("assets/Mushroom.png"), !faceRight, g, panel).powerMarioUp(this);
+						else
+						{
+							coins.add(new Coin(t.getHitbox().x, t.getHitbox().y, new ImageIcon("assets/Coin.png"), !faceRight, g, panel));
+							coins.get(coins.size()-1).powerMarioUp(this);
+						}
 					}
 				}
 				
@@ -243,8 +279,8 @@ public class Mario
 	public boolean isDead()
 	{
 		if(y > 1080)
-			return true;
-		return false;
+			dead = true;
+		return dead;
 	}
 
 	public String getMarioType()
@@ -255,6 +291,18 @@ public class Mario
 	public void setMarioType(String marioType)
 	{
 		this.marioType = marioType;
+	}
+	
+	public boolean canKillEnemy(Enemy e)
+	{
+		if(e.getHitbox().intersects(Hitbox))
+		{
+			if(falling)
+				return true;
+			else
+				dead = true;
+		}
+		return false;
 	}
 
 	

@@ -20,6 +20,7 @@ public class MarioPanel extends JPanel
 	private Graphics2D g;
 	private JPanel panel;
 	private ArrayList<StageHitbox> stageHitboxes;
+	private ArrayList<Enemy> enemies;
 	
 	//sets up the initial panel for drawing with proper size
 	public MarioPanel(int w, int h)
@@ -40,6 +41,8 @@ public class MarioPanel extends JPanel
 		
 		leftMost = 0;
 		rightMost = 1920;
+		last = 0;
+		enemies = new ArrayList<Enemy>();
 		
 		stageHitboxes = new ArrayList<StageHitbox>();
 		
@@ -58,6 +61,8 @@ public class MarioPanel extends JPanel
 		
 		g = (Graphics2D)tg;
 		
+		new ImageIcon("assets/bg.jpg").paintIcon(panel, g, 0, 0);
+		
 		//all drawings below here:
 		
 		for(int x = 0; x < 1920; x+=30)
@@ -69,6 +74,16 @@ public class MarioPanel extends JPanel
 			h.loadSprite(g, panel);
 		
 		mario.loadSprite(g, panel);
+		mario.loadCoins(g, panel);
+		
+		for(Enemy e : enemies)
+			e.loadEnemy(g, panel);
+		
+		
+		new ImageIcon("assets/coin.png").paintIcon(panel, g, 0, 53);
+		g.setColor(Color.black);
+		g.setFont(new Font("Comic Sans", Font.PLAIN, 50));
+		g.drawString("" + mario.getCoinCount(), 50, 95);
 		
 		
 		
@@ -83,8 +98,8 @@ public class MarioPanel extends JPanel
 			
 			if(source.equals(ticker))
 			{
-				update();
 				repaint();
+				update();
 			}
 			if(source.equals(faller))
 			{
@@ -182,7 +197,9 @@ public class MarioPanel extends JPanel
 	
 	public void update()
 	{
+		updateStage();
 		updateMario();
+		updateEnemies();
 	}
 	
 	public void updateMario()
@@ -195,22 +212,50 @@ public class MarioPanel extends JPanel
 		
 		if(mario.isDead())
 			System.out.println("t");
+			
 		
+		if(!mario.isTouchingStage(stageHitboxes, g, panel) && !mario.isGoingUp())
+			faller.start();
+		
+
+		for(int i = 0; i < enemies.size(); i++)
+		{
+			if(mario.canKillEnemy(enemies.get(i)))
+				enemies.remove(i);
+		}
+		
+		if(mario.isDead())
+			System.out.println("DEEEEEEEEAD");
+	}
+	
+	public void updateStage()
+	{
 		if(mario.isMovingRight())
 		{
 			for(StageHitbox h : stageHitboxes)
 				h.setHitbox(new Rectangle(h.getHitbox().x-10, h.getHitbox().y, h.getHitbox().width, h.getHitbox().height));
+			for(Coin c : mario.getCoins())
+				c.setX(c.getX()-10);
 		}
 			
 		if(mario.isMovingLeft())
 		{
 			for(StageHitbox h : stageHitboxes)
 				h.setHitbox(new Rectangle(h.getHitbox().x+10, h.getHitbox().y, h.getHitbox().width, h.getHitbox().height));
+			for(Coin c : mario.getCoins())
+				c.setX(c.getX()+10);
 		}
-			
-		
-		if(!mario.isTouchingStage(stageHitboxes, g, panel) && !mario.isGoingUp())
-			faller.start();
+	}
+	
+	public void updateEnemies()
+	{
+		for(int i = 0; i < enemies.size(); i++)
+		{
+			Enemy e = enemies.get(i);
+			e.moveEnemy(mario);
+			e.fall();
+			e.isTouchingStage(stageHitboxes, g, panel);
+		}
 	}
 	
 	public void makeStage()
@@ -223,11 +268,9 @@ public class MarioPanel extends JPanel
 			do 
 			{
 				rand = (int)(Math.random()*3);
-			}while(rand != last);
+			}while(rand == last);
 			
 			last = rand;
-			
-			rand = 4;
 			
 			switch(rand)
 			{
@@ -319,5 +362,10 @@ public class MarioPanel extends JPanel
 				break;
 			}
 		}
+		
+		for(int i = 0; i < 5; i++)
+			enemies.add(new Enemy(new ImageIcon("assets/Goomba.png"), stageHitboxes, 50, 50));
+		
+		enemies.get(4).setX(1700);
 	}
 }

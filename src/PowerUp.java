@@ -13,14 +13,18 @@ public abstract class PowerUp
 	protected ImageIcon sprite;
 	protected Rectangle Hitbox;
 	protected boolean moveRight, falling;
+	protected Graphics2D g;
+	protected JPanel panel;
 	protected int x, y;
 	
-	public PowerUp(int x, int y, ImageIcon sprite, boolean moveRight)
+	public PowerUp(int x, int y, ImageIcon sprite, boolean moveRight, Graphics2D g, JPanel panel)
 	{
 		this.x = x;
 		this.y = y;
 		falling = true;
 		this.sprite = sprite;
+		this.g = g;
+		this.panel = panel;
 	}
 	
 	public ImageIcon getSprite()
@@ -31,6 +35,11 @@ public abstract class PowerUp
 	public Rectangle getHitbox()
 	{
 		return Hitbox;
+	}
+	
+	public void loadSprite(Graphics2D g, JPanel panel)
+	{
+		sprite.paintIcon(panel, g, x, y);
 	}
 
 	public void setHitbox(Rectangle hitbox)

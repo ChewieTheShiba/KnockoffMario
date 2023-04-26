@@ -9,9 +9,9 @@ import javax.swing.Timer;
 public class Mushroom extends PowerUp
 {
 	
-	public Mushroom(int x, int y, ImageIcon sprite, boolean moveRight)
+	public Mushroom(int x, int y, ImageIcon sprite, boolean moveRight, Graphics2D g,JPanel panel)
 	{
-		super(x, y-45, sprite, moveRight);
+		super(x, y-45, sprite, moveRight, g, panel);
 		Hitbox = new Rectangle(x, y, 50, 45);
 	}
 	
