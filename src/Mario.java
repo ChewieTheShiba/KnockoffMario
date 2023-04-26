@@ -9,7 +9,7 @@ import javax.swing.Timer;
 public class Mario
 {
 	private int x, y, yVel, coinCount;
-	private boolean jumping, faceRight, movingRight, movingLeft, touchingStage, goingUp, falling, dead;
+	private boolean jumping, faceRight, movingRight, movingLeft, touchingStage, goingUp, falling, dead, canMove, hasWon;
 	private ImageIcon sprite;
 	private String marioType;
 	private final int JUMPHEIGHT;
@@ -32,6 +32,7 @@ public class Mario
 		dead = false;
 		coins = new ArrayList<Coin>();
 		Hitbox = new Rectangle(x+10, y+3, 18, 50);
+		canMove = true;
 	}
 	
 	public void loadSprite(Graphics2D g, JPanel panel)
@@ -74,7 +75,26 @@ public class Mario
 	{
 		this.y = y;
 	}
-	
+
+	public boolean isHasWon()
+	{
+		return hasWon;
+	}
+
+	public void setHasWon(boolean hasWon)
+	{
+		this.hasWon = hasWon;
+	}
+
+	public boolean isCanMove()
+	{
+		return canMove;
+	}
+
+	public void setCanMove(boolean canMove)
+	{
+		this.canMove = canMove;
+	}
 
 	public int getCoinCount()
 	{
@@ -134,6 +154,9 @@ public class Mario
 	{
 		touchingStage = false;
 		
+		if(hasWon)
+			sprite = new ImageIcon("assets/" + marioType + "MarioWin.png");
+		
 		for(int i = 0; i < h.size(); i++)
 		{
 			StageHitbox t = h.get(i);
@@ -166,7 +189,7 @@ public class Mario
 					goingUp = false;
 					falling = true;
 					yVel = 2;
-					if(t.isBreakable() && !t.isQMark() && marioType.equals(""))
+					if(t.isBreakable() && !t.isQMark() && !marioType.equals(""))
 						h.remove(i);
 					if(t.isQMark())
 					{
@@ -207,6 +230,13 @@ public class Mario
 				}
 				
 				touchingStage = true;
+				
+				
+				if(t.getSprite().toString().equals("assets/endBox.png"))
+				{
+					canMove = false;
+					hasWon = true;
+				}
 			}
 		}
 		return touchingStage;
@@ -264,6 +294,11 @@ public class Mario
 	public void setGoingUp(boolean goingUp)
 	{
 		this.goingUp = goingUp;
+	}
+	
+	public void killMario()
+	{
+		sprite = new ImageIcon("marioDying.png");
 	}
 
 	public boolean isFalling()

@@ -67,13 +67,11 @@ public class Enemy
 				{
 					if(moveRight)
 					{
-						System.out.println("hi:");
 						moveRight = false;
 						falling = true;
 					}
 					else
 					{
-						System.out.println("bye:");
 						moveRight = true;
 						falling = true;
 					}
@@ -134,7 +132,6 @@ public class Enemy
 		}
 		else if(!moveRight)
 		{
-			System.out.println(x);
 			x = x - 5;
 			Hitbox = new Rectangle(x, Hitbox.y, Hitbox.width, Hitbox.height);
 		}

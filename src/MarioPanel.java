@@ -21,6 +21,7 @@ public class MarioPanel extends JPanel
 	private JPanel panel;
 	private ArrayList<StageHitbox> stageHitboxes;
 	private ArrayList<Enemy> enemies;
+	private boolean gameOver;
 	
 	//sets up the initial panel for drawing with proper size
 	public MarioPanel(int w, int h)
@@ -43,6 +44,7 @@ public class MarioPanel extends JPanel
 		rightMost = 1920;
 		last = 0;
 		enemies = new ArrayList<Enemy>();
+		gameOver = false;
 		
 		stageHitboxes = new ArrayList<StageHitbox>();
 		
@@ -61,29 +63,46 @@ public class MarioPanel extends JPanel
 		
 		g = (Graphics2D)tg;
 		
-		new ImageIcon("assets/bg.jpg").paintIcon(panel, g, 0, 0);
-		
-		//all drawings below here:
-		
-		for(int x = 0; x < 1920; x+=30)
+		if(!gameOver)
 		{
-			g.drawString("" + x, x, 30);
+			new ImageIcon("assets/bg.jpg").paintIcon(panel, g, 0, 0);
+			new ImageIcon("assets/endScreen.jpg").paintIcon(panel, g, stageHitboxes.get(stageHitboxes.size()-1).getHitbox().x-1920/2, 0);
+			new ImageIcon("assets/endScreen.jpg").paintIcon(panel, g, stageHitboxes.get(stageHitboxes.size()-1).getHitbox().x-1920/2 + 1920, 0);
+			
+			//all drawings below here:
+			
+			for(StageHitbox h : stageHitboxes)
+				h.loadSprite(g, panel);
+			
+			mario.loadSprite(g, panel);
+			mario.loadCoins(g, panel);
+			
+			for(Enemy e : enemies)
+				e.loadEnemy(g, panel);
+			
+			
+			new ImageIcon("assets/coin.png").paintIcon(panel, g, 0, 53);
+			g.setColor(Color.black);
+			g.setFont(new Font("Comic Sans", Font.PLAIN, 50));
+			g.drawString("" + mario.getCoinCount(), 50, 95);
+			
+			
+			if(mario.isDead()) 
+			{
+				mario.setCanMove(false);
+				mario.killMario();
+				gameOver = true;
+			}
+			
+			if(mario.isHasWon())
+			{
+				g.setFont(new Font("Comic Sans", Font.PLAIN, 75));
+				g.setColor(Color.white);
+				g.drawString("You Won!", w/2-125, h/2-100);
+			}
 		}
-		
-		for(StageHitbox h : stageHitboxes)
-			h.loadSprite(g, panel);
-		
-		mario.loadSprite(g, panel);
-		mario.loadCoins(g, panel);
-		
-		for(Enemy e : enemies)
-			e.loadEnemy(g, panel);
-		
-		
-		new ImageIcon("assets/coin.png").paintIcon(panel, g, 0, 53);
-		g.setColor(Color.black);
-		g.setFont(new Font("Comic Sans", Font.PLAIN, 50));
-		g.drawString("" + mario.getCoinCount(), 50, 95);
+		else
+			new ImageIcon("assets/GameOver.jpg").paintIcon(panel, g, 0, 0);
 		
 		
 		
@@ -151,31 +170,33 @@ public class MarioPanel extends JPanel
 
 		public void keyPressed(KeyEvent e)
 		{
-			switch(e.getKeyCode()) 
+			if(mario.isCanMove())
 			{
-			case KeyEvent.VK_D:
-				mario.setMovingRight(true);
-				break;
-			case KeyEvent.VK_A:
-				if(!(stageHitboxes.get(0).getHitbox().x >= 0))
-				mario.setMovingLeft(true);
-				break;
-			case KeyEvent.VK_W:
-				if(!mario.isJumping())
+				switch(e.getKeyCode()) 
 				{
-					mario.setFalling(false);
-					faller.stop();
-					mario.setyVel(mario.getJUMPHEIGHT());
-					mario.setY(mario.getY()-mario.getyVel());
-					mario.setyVel(mario.getyVel()-5);
-					mario.setGoingUp(true);
-					mario.setJumping(true);
-					jumper.start();
+				case KeyEvent.VK_D:
+					mario.setMovingRight(true);
+					break;
+				case KeyEvent.VK_A:
+					if(!(stageHitboxes.get(0).getHitbox().x >= 0))
+					mario.setMovingLeft(true);
+					break;
+				case KeyEvent.VK_W:
+					if(!mario.isJumping())
+					{
+						mario.setFalling(false);
+						faller.stop();
+						mario.setyVel(mario.getJUMPHEIGHT());
+						mario.setY(mario.getY()-mario.getyVel());
+						mario.setyVel(mario.getyVel()-5);
+						mario.setGoingUp(true);
+						mario.setJumping(true);
+						jumper.start();
+					}
+					break;
+				case KeyEvent.VK_S:
 				}
-				break;
-			case KeyEvent.VK_S:
 			}
-			
 		}
 
 		public void keyReleased(KeyEvent e)
@@ -210,10 +231,6 @@ public class MarioPanel extends JPanel
 		mario.updateHitbox();
 		mario.updateSprite();
 		
-		if(mario.isDead())
-			System.out.println("t");
-			
-		
 		if(!mario.isTouchingStage(stageHitboxes, g, panel) && !mario.isGoingUp())
 			faller.start();
 		
@@ -225,7 +242,8 @@ public class MarioPanel extends JPanel
 		}
 		
 		if(mario.isDead())
-			System.out.println("DEEEEEEEEAD");
+			System.out.println("hi");
+		
 	}
 	
 	public void updateStage()
@@ -267,12 +285,10 @@ public class MarioPanel extends JPanel
 			
 			do 
 			{
-				rand = (int)(Math.random()*3);
+				rand = (int)(Math.random()*5);
 			}while(rand == last);
 			
 			last = rand;
-			
-			rand = 4;
 			
 			switch(rand)
 			{
@@ -365,9 +381,12 @@ public class MarioPanel extends JPanel
 			}
 		}
 		
-		for(int i = 0; i < 5; i++)
-			enemies.add(new Enemy(new ImageIcon("assets/Goomba.png"), stageHitboxes, 50, 50));
+		for(int a = constx; a < constx+1920; a += 50)
+			stageHitboxes.add(new StageHitbox(a, 1030, 50, 50, new ImageIcon("assets/floor.png"), false, false));
 		
-		enemies.get(4).setX(1700);
+		stageHitboxes.add(new StageHitbox(constx+1920/2, 850, 50, 50, new ImageIcon("assets/endBox.png"), false, false));
+		
+		for(int i = 0; i < 20; i++)
+			enemies.add(new Enemy(new ImageIcon("assets/Goomba.png"), stageHitboxes, 50, 50));
 	}
 }

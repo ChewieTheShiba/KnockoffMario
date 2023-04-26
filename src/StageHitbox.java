@@ -70,6 +70,13 @@ public class StageHitbox
 	{
 		this.sprite = sprite;
 	}
+
+	public ImageIcon getSprite()
+	{
+		return sprite;
+	}
+	
+	
 	
 	
 	
