@@ -166,7 +166,7 @@ public class Mario
 					goingUp = false;
 					falling = true;
 					yVel = 2;
-					if(t.isBreakable() && !t.isQMark())
+					if(t.isBreakable() && !t.isQMark() && marioType.equals(""))
 						h.remove(i);
 					if(t.isQMark())
 					{

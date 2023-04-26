@@ -272,6 +272,8 @@ public class MarioPanel extends JPanel
 			
 			last = rand;
 			
+			rand = 4;
+			
 			switch(rand)
 			{
 			case 0:
